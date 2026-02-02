@@ -1,28 +1,102 @@
 
+:root {
+    --bg-color: #f0f2f5;
+    --text-color: #333;
+    --container-bg-color: #fff;
+    --header-color: #1a237e;
+    --btn-bg-color: #1a237e;
+    --btn-text-color: #fff;
+    --placeholder-bg-color: #e0e0e0;
+}
+
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --container-bg-color: #1e1e1e;
+    --header-color: #bb86fc;
+    --btn-bg-color: #bb86fc;
+    --btn-text-color: #121212;
+    --placeholder-bg-color: #333;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    background-color: #f0f2f5;
-    color: #333;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     margin: 0;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.theme-switch-container {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
 }
 
 .container {
-    background-color: #fff;
+    background-color: var(--container-bg-color);
     padding: 2rem;
     border-radius: 16px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     text-align: center;
     width: 90%;
     max-width: 500px;
+    transition: background-color 0.3s;
 }
 
 h1 {
-    color: #1a237e;
+    color: var(--header-color);
     margin-bottom: 2rem;
+    transition: color 0.3s;
 }
 
 .numbers-container {
@@ -48,12 +122,12 @@ h1 {
 }
 
 .number-placeholder {
-    background-color: #e0e0e0;
+    background-color: var(--placeholder-bg-color);
 }
 
 .generate-btn {
-    background-color: #1a237e;
-    color: #fff;
+    background-color: var(--btn-bg-color);
+    color: var(--btn-text-color);
     border: none;
     padding: 1rem 2rem;
     border-radius: 8px;
@@ -64,7 +138,7 @@ h1 {
 }
 
 .generate-btn:hover {
-    background-color: #283593;
+    filter: brightness(1.2);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(26, 35, 126, 0.3);
 }
