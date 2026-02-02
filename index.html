@@ -3,13 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>제휴 문의 (Affiliation Inquiry)</title>
+    <title>동물상 테스트</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
             background-color: #f4f4f4;
             color: #333;
+        }
+        .gnb {
+            background-color: #333;
+            overflow: hidden;
+        }
+        .gnb a {
+            float: left;
+            color: #f2f2f2;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            font-size: 17px;
+        }
+        .gnb a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+        .gnb a.active {
+            background-color: #007bff;
+            color: white;
         }
         .container {
             max-width: 600px;
@@ -22,44 +42,6 @@
         h1 {
             text-align: center;
             color: #333;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-        label {
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        input[type="text"],
-        input[type="email"],
-        textarea {
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 18px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .form-feedback {
-            margin-top: 20px;
-            text-align: center;
-            font-weight: bold;
         }
         .animal-face-test {
             text-align: center;
@@ -78,6 +60,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
 </head>
 <body>
+    <div class="gnb">
+        <a class="active" href="index.html">동물상 테스트</a>
+        <a href="community.html">커뮤니티</a>
+        <a href="contact.html">제휴문의</a>
+    </div>
+
     <div class="container animal-face-test">
         <h1>동물상 테스트</h1>
         <p>당신은 강아지상일까요, 고양이상일까요?</p>
@@ -85,44 +73,6 @@
         <img id="image-preview" src="" alt="Image preview">
         <div id="result"></div>
     </div>
-
-    <div class="container">
-        <h1>제휴 문의 (Affiliation Inquiry)</h1>
-        <form action="https://formspree.io/f/xrelldgp" method="POST">
-            <label for="name">이름 (Name):</label>
-            <input type="text" id="name" name="name" required>
-
-            <label for="email">이메일 (Email):</label>
-            <input type="email" id="email" name="_replyto" required>
-
-            <label for="message">문의 내용 (Message):</label>
-            <textarea id="message" name="message" required></textarea>
-
-            <button type="submit">문의 제출 (Submit Inquiry)</button>
-        </form>
-        <p class="form-feedback">
-            (문의 제출 후, Formspree에서 제공하는 기본 성공 페이지로 이동합니다.)
-        </p>
-    </div>
-    <div id="disqus_thread"></div>
-    <script>
-        /**
-        *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-        *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
-        /*
-        var disqus_config = function () {
-        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
-        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-        };
-        */
-        (function() { // DON'T EDIT BELOW THIS LINE
-        var d = document, s = d.createElement('script');
-        s.src = 'https://productbuilder-prbxbdilkt.disqus.com/embed.js';
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
-        })();
-    </script>
-    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 
     <script type="text/javascript">
         const URL = "https://teachablemachine.withgoogle.com/models/4NEmgONfD/";
