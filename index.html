@@ -6,82 +6,131 @@
     <title>동물상 테스트</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            background-color: #f4f4f4;
+            background-color: #e0f7fa; /* Brighter background */
             color: #333;
+            line-height: 1.6;
         }
         .gnb {
-            background-color: #333;
+            background-color: #007bff; /* Vibrant blue */
             overflow: hidden;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+            margin: 10px auto;
+            max-width: 600px;
         }
         .gnb-links {
             display: flex;
         }
         .gnb a {
             float: left;
-            color: #f2f2f2;
+            color: #fff; /* White text */
             text-align: center;
-            padding: 14px 16px;
+            padding: 12px 15px; /* Slightly adjusted padding */
             text-decoration: none;
             font-size: 17px;
+            transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
         }
         .gnb a:hover {
-            background-color: #ddd;
-            color: black;
+            background-color: #42a5f5; /* Lighter blue on hover */
+            color: white;
         }
         .gnb a.active {
-            background-color: #007bff;
+            background-color: #0d47a1; /* Darker blue for active */
             color: white;
         }
         .lang-toggle {
             padding: 8px 12px;
-            margin-right: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
+            margin-right: 15px; /* Adjusted margin */
+            background-color: #fff; /* White background */
+            color: #007bff; /* Blue text */
+            border: 1px solid #007bff; /* Blue border */
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
+            transition: all 0.3s ease; /* Smooth transition */
         }
         .lang-toggle:hover {
-            background-color: #0056b3;
+            background-color: #007bff;
+            color: white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
         .container {
             max-width: 600px;
             margin: 20px auto;
             background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 40px; /* Increased padding */
+            border-radius: 12px; /* More rounded corners */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Softer, larger shadow */
         }
         h1 {
             text-align: center;
-            color: #333;
+            color: #1a237e; /* Darker, richer blue */
+            margin-bottom: 25px;
         }
         .animal-face-test {
             text-align: center;
         }
+        input[type="file"] {
+            display: block;
+            margin: 15px auto;
+            padding: 10px;
+            border: 1px solid #007bff;
+            border-radius: 5px;
+            background-color: #f8f8f8;
+        }
         #image-preview {
             max-width: 100%;
             margin-top: 20px;
-            height: auto; /* Ensure aspect ratio is maintained */
+            height: auto;
             display: none; /* Hidden until image is loaded */
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: opacity 0.5s ease-in-out; /* Fade-in effect */
+            opacity: 0;
+        }
+        .action-button {
+            background-color: #ff5722; /* Vibrant orange */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px; /* Pill shape */
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease; /* Smooth transition for hover effects */
+        }
+        .action-button:hover {
+            transform: translateY(-2px); /* Slight lift effect */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
         }
         #result {
             margin-top: 20px;
             font-weight: bold;
-            font-size: 20px;
-            min-height: 24px; /* Reserve space to prevent layout shifts */
+            font-size: 22px; /* Slightly larger */
+            color: #d32f2f; /* Red for emphasis */
+            min-height: 30px; /* Adjust height */
+            opacity: 0; /* Hidden by default for animation */
         }
         #comment {
             margin-top: 10px;
-            font-size: 16px;
-            line-height: 1.5;
-            min-height: 24px; /* Reserve space */
+            font-size: 17px; /* Slightly larger */
+            line-height: 1.6;
+            color: #455a64; /* Darker grey */
+            min-height: 30px; /* Adjust height */
+            opacity: 0; /* Hidden by default for animation */
+        }
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fade-in 0.8s ease-out forwards;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
@@ -102,6 +151,7 @@
         <p data-text-key="instruction">당신은 강아지상일까요, 고양이상일까요?</p>
         <input type="file" id="image-upload" accept="image/*">
         <img id="image-preview" src="" alt="Image preview">
+        <button id="analyze-button" class="action-button" data-text-key="analyzeButton">분석하기</button>
         <div id="result"></div>
         <div id="comment"></div>
     </div>
@@ -109,7 +159,6 @@
     <script type="text/javascript">
         const URL = "https://teachablemachine.withgoogle.com/models/4NEmgONfD/";
         let model, maxPredictions;
-
         let currentLanguage = 'ko'; // Default language
 
         const texts = {
@@ -119,6 +168,8 @@
                 contact: "Affiliation Inquiry",
                 mainTitle: "Animal Face Test",
                 instruction: "Do you have a dog face or a cat face?",
+                analyzeButton: "Analyze",
+                loading: "Analyzing...",
                 dogResult: "You are a Dog Face with a {probability}% chance!",
                 catResult: "You are a Cat Face with a {probability}% chance!",
                 dogComment: "You have a cute and lovely impression, just like a puppy! You give off a friendly and affectionate vibe, making people feel comfortable around you.",
@@ -131,6 +182,8 @@
                 contact: "제휴문의",
                 mainTitle: "동물상 테스트",
                 instruction: "당신은 강아지상일까요, 고양이상일까요?",
+                analyzeButton: "분석하기",
+                loading: "분석 중...",
                 dogResult: "당신은 {probability}% 확률로 강아지상입니다!",
                 catResult: "당신은 {probability}% 확률로 고양이상입니다!",
                 dogComment: "강아지상인 당신은 귀엽고 사랑스러운 인상을 가지고 있네요! 사람들에게 친근하고 다정한 느낌을 주며, 함께 있으면 마음이 편안해지는 매력이 있어요.",
@@ -147,7 +200,7 @@
                 }
             });
             document.getElementById('lang-toggle').textContent = texts[currentLanguage]['toggleButton'];
-            document.title = texts[currentLanguage]['mainTitle']; // Update page title
+            document.title = texts[currentLanguage]['mainTitle'];
         }
 
         async function init() {
@@ -156,48 +209,68 @@
 
             model = await tmImage.load(modelURL, metadataURL);
             maxPredictions = model.getTotalClasses();
-            updateUI(); // Set initial language
+            updateUI();
         }
 
         async function predict() {
             const image = document.getElementById('image-preview');
-            // Ensure image is fully loaded and rendered before predicting
-            // We can add a small delay or check image.naturalWidth / naturalHeight
-            if (image.naturalWidth === 0 || image.naturalHeight === 0) {
-                 // Image not fully loaded, try again after a short delay
-                setTimeout(() => predict(), 100);
+            const resultDiv = document.getElementById('result');
+            const commentDiv = document.getElementById('comment');
+
+            // Clear previous results and show loading
+            resultDiv.textContent = texts[currentLanguage]['loading'];
+            commentDiv.textContent = '';
+            resultDiv.style.opacity = 1; // Ensure loading text is visible
+            commentDiv.style.opacity = 0; // Hide comment during loading
+
+            // Check if an image is actually loaded in the preview
+            if (!image.src || image.src === window.location.href + '#') {
+                resultDiv.textContent = currentLanguage === 'ko' ? '이미지를 먼저 업로드해주세요.' : 'Please upload an image first.';
                 return;
             }
 
-            const prediction = await model.predict(image, false);
-            const resultDiv = document.getElementById('result');
-            const commentDiv = document.getElementById('comment');
-            let maxProb = 0;
-            let maxClass = "";
-            let classKey = ""; // To store "dogResult" or "catResult"
-            let commentKey = ""; // To store "dogComment" or "catComment"
+            // Ensure image is visible and potentially loaded before prediction
+            if (image.style.display === 'none') {
+                 // Image might not be ready, wait for it to be displayed
+                resultDiv.textContent = currentLanguage === 'ko' ? '이미지를 준비 중입니다...' : 'Preparing image...';
+                setTimeout(() => predict(), 500); // Re-attempt prediction after a short delay
+                return;
+            }
 
-            for (let i = 0; i < maxPredictions; i++) {
-                if (prediction[i].probability.toFixed(2) > maxProb) {
-                    maxProb = prediction[i].probability.toFixed(2);
-                    maxClass = prediction[i].className;
+            try {
+                const prediction = await model.predict(image, false);
+                let maxProb = 0;
+                let maxClass = "";
+                let classKey = "";
+                let commentKey = "";
+
+                for (let i = 0; i < maxPredictions; i++) {
+                    if (prediction[i].probability.toFixed(2) > maxProb) {
+                        maxProb = prediction[i].probability.toFixed(2);
+                        maxClass = prediction[i].className;
+                    }
                 }
-            }
 
-            if (maxClass.includes("강아지")) { // Assuming class name includes "강아지" for dog
-                classKey = "dogResult";
-                commentKey = "dogComment";
-            } else if (maxClass.includes("고양이")) { // Assuming class name includes "고양이" for cat
-                classKey = "catResult";
-                commentKey = "catComment";
-            } else {
-                // Fallback for other classes if any
-                classKey = "result"; // Generic key if needed
-                commentKey = "comment"; // Generic key if needed
-            }
+                if (maxClass.includes("강아지")) {
+                    classKey = "dogResult";
+                    commentKey = "dogComment";
+                } else if (maxClass.includes("고양이")) {
+                    classKey = "catResult";
+                    commentKey = "catComment";
+                } else {
+                    classKey = "result"; // Fallback, though model should ideally classify
+                    commentKey = "comment"; // Fallback
+                }
 
-            resultDiv.innerHTML = texts[currentLanguage][classKey].replace('{probability}', (maxProb * 100).toFixed(0));
-            commentDiv.innerHTML = texts[currentLanguage][commentKey];
+                resultDiv.innerHTML = texts[currentLanguage][classKey].replace('{probability}', (maxProb * 100).toFixed(0));
+                commentDiv.innerHTML = texts[currentLanguage][commentKey];
+                resultDiv.classList.add('fade-in');
+                commentDiv.classList.add('fade-in');
+            } catch (error) {
+                console.error("Prediction error:", error);
+                resultDiv.textContent = currentLanguage === 'ko' ? '분석 중 오류가 발생했습니다.' : 'An error occurred during analysis.';
+                commentDiv.textContent = '';
+            }
         }
 
         document.getElementById("image-upload").addEventListener("change", (event) => {
@@ -205,20 +278,31 @@
             reader.onload = (e) => {
                 const preview = document.getElementById("image-preview");
                 preview.src = e.target.result;
-                preview.style.display = 'block'; // Show image preview
-                document.getElementById('result').textContent = ''; // Clear previous result
-                document.getElementById('comment').textContent = ''; // Clear previous comment
-                preview.onload = () => predict();
+                preview.style.display = 'block';
+                preview.style.opacity = 1; // Ensure image is visible and opaque
+
+                // Clear previous results and comments immediately
+                const resultDiv = document.getElementById('result');
+                const commentDiv = document.getElementById('comment');
+                resultDiv.textContent = '';
+                commentDiv.textContent = '';
+                resultDiv.classList.remove('fade-in');
+                commentDiv.classList.remove('fade-in');
+                resultDiv.style.opacity = 0;
+                commentDiv.style.opacity = 0;
             };
             reader.readAsDataURL(event.target.files[0]);
         });
 
+        document.getElementById('analyze-button').addEventListener('click', predict);
+
         document.getElementById('lang-toggle').addEventListener('click', () => {
             currentLanguage = currentLanguage === 'ko' ? 'en' : 'ko';
             updateUI();
-            // Re-predict if an image is already loaded to update the result text
+            // If an image is loaded and there was a result, re-predict to update language
             const image = document.getElementById('image-preview');
-            if (image.src && image.src !== window.location.href + '#') { // Check if image exists
+            const resultDiv = document.getElementById('result');
+            if (image.src && image.src !== window.location.href + '#' && resultDiv.textContent !== '' && !resultDiv.textContent.includes(texts['ko'].loading) && !resultDiv.textContent.includes(texts['en'].loading)) {
                 predict();
             }
         });
