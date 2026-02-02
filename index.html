@@ -14,6 +14,12 @@
         .gnb {
             background-color: #333;
             overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .gnb-links {
+            display: flex;
         }
         .gnb a {
             float: left;
@@ -30,6 +36,19 @@
         .gnb a.active {
             background-color: #007bff;
             color: white;
+        }
+        .lang-toggle {
+            padding: 8px 12px;
+            margin-right: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .lang-toggle:hover {
+            background-color: #0056b3;
         }
         .container {
             max-width: 600px;
@@ -49,11 +68,20 @@
         #image-preview {
             max-width: 100%;
             margin-top: 20px;
+            height: auto; /* Ensure aspect ratio is maintained */
+            display: none; /* Hidden until image is loaded */
         }
         #result {
             margin-top: 20px;
             font-weight: bold;
             font-size: 20px;
+            min-height: 24px; /* Reserve space to prevent layout shifts */
+        }
+        #comment {
+            margin-top: 10px;
+            font-size: 16px;
+            line-height: 1.5;
+            min-height: 24px; /* Reserve space */
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
@@ -61,23 +89,66 @@
 </head>
 <body>
     <div class="gnb">
-        <a class="active" href="index.html">동물상 테스트</a>
-        <a href="community.html">커뮤니티</a>
-        <a href="contact.html">제휴문의</a>
+        <div class="gnb-links">
+            <a class="active" href="index.html" data-text-key="animalTest">동물상 테스트</a>
+            <a href="community.html" data-text-key="community">커뮤니티</a>
+            <a href="contact.html" data-text-key="contact">제휴문의</a>
+        </div>
+        <button id="lang-toggle" class="lang-toggle">English</button>
     </div>
 
     <div class="container animal-face-test">
-        <h1>동물상 테스트</h1>
-        <p>당신은 강아지상일까요, 고양이상일까요?</p>
+        <h1 data-text-key="mainTitle">동물상 테스트</h1>
+        <p data-text-key="instruction">당신은 강아지상일까요, 고양이상일까요?</p>
         <input type="file" id="image-upload" accept="image/*">
         <img id="image-preview" src="" alt="Image preview">
         <div id="result"></div>
+        <div id="comment"></div>
     </div>
 
     <script type="text/javascript">
         const URL = "https://teachablemachine.withgoogle.com/models/4NEmgONfD/";
-
         let model, maxPredictions;
+
+        let currentLanguage = 'ko'; // Default language
+
+        const texts = {
+            en: {
+                animalTest: "Animal Face Test",
+                community: "Community",
+                contact: "Affiliation Inquiry",
+                mainTitle: "Animal Face Test",
+                instruction: "Do you have a dog face or a cat face?",
+                dogResult: "You are a Dog Face with a {probability}% chance!",
+                catResult: "You are a Cat Face with a {probability}% chance!",
+                dogComment: "You have a cute and lovely impression, just like a puppy! You give off a friendly and affectionate vibe, making people feel comfortable around you.",
+                catComment: "You have a chic and stylish charm, just like a cat! You have a mysterious atmosphere and capture people's hearts with your unknowable charm.",
+                toggleButton: "Korean"
+            },
+            ko: {
+                animalTest: "동물상 테스트",
+                community: "커뮤니티",
+                contact: "제휴문의",
+                mainTitle: "동물상 테스트",
+                instruction: "당신은 강아지상일까요, 고양이상일까요?",
+                dogResult: "당신은 {probability}% 확률로 강아지상입니다!",
+                catResult: "당신은 {probability}% 확률로 고양이상입니다!",
+                dogComment: "강아지상인 당신은 귀엽고 사랑스러운 인상을 가지고 있네요! 사람들에게 친근하고 다정한 느낌을 주며, 함께 있으면 마음이 편안해지는 매력이 있어요.",
+                catComment: "고양이상인 당신은 시크하고 도도한 매력을 가지고 있네요! 신비로운 분위기를 풍기며, 알 수 없는 매력으로 사람들의 마음을 사로잡는군요.",
+                toggleButton: "English"
+            }
+        };
+
+        function updateUI() {
+            document.querySelectorAll('[data-text-key]').forEach(element => {
+                const key = element.dataset.textKey;
+                if (texts[currentLanguage][key]) {
+                    element.textContent = texts[currentLanguage][key];
+                }
+            });
+            document.getElementById('lang-toggle').textContent = texts[currentLanguage]['toggleButton'];
+            document.title = texts[currentLanguage]['mainTitle']; // Update page title
+        }
 
         async function init() {
             const modelURL = URL + "model.json";
@@ -85,21 +156,48 @@
 
             model = await tmImage.load(modelURL, metadataURL);
             maxPredictions = model.getTotalClasses();
+            updateUI(); // Set initial language
         }
 
         async function predict() {
             const image = document.getElementById('image-preview');
+            // Ensure image is fully loaded and rendered before predicting
+            // We can add a small delay or check image.naturalWidth / naturalHeight
+            if (image.naturalWidth === 0 || image.naturalHeight === 0) {
+                 // Image not fully loaded, try again after a short delay
+                setTimeout(() => predict(), 100);
+                return;
+            }
+
             const prediction = await model.predict(image, false);
             const resultDiv = document.getElementById('result');
+            const commentDiv = document.getElementById('comment');
             let maxProb = 0;
             let maxClass = "";
+            let classKey = ""; // To store "dogResult" or "catResult"
+            let commentKey = ""; // To store "dogComment" or "catComment"
+
             for (let i = 0; i < maxPredictions; i++) {
                 if (prediction[i].probability.toFixed(2) > maxProb) {
                     maxProb = prediction[i].probability.toFixed(2);
                     maxClass = prediction[i].className;
                 }
             }
-            resultDiv.innerHTML = `당신은 ${maxProb * 100}% 확률로 ${maxClass}상입니다!`;
+
+            if (maxClass.includes("강아지")) { // Assuming class name includes "강아지" for dog
+                classKey = "dogResult";
+                commentKey = "dogComment";
+            } else if (maxClass.includes("고양이")) { // Assuming class name includes "고양이" for cat
+                classKey = "catResult";
+                commentKey = "catComment";
+            } else {
+                // Fallback for other classes if any
+                classKey = "result"; // Generic key if needed
+                commentKey = "comment"; // Generic key if needed
+            }
+
+            resultDiv.innerHTML = texts[currentLanguage][classKey].replace('{probability}', (maxProb * 100).toFixed(0));
+            commentDiv.innerHTML = texts[currentLanguage][commentKey];
         }
 
         document.getElementById("image-upload").addEventListener("change", (event) => {
@@ -107,9 +205,22 @@
             reader.onload = (e) => {
                 const preview = document.getElementById("image-preview");
                 preview.src = e.target.result;
+                preview.style.display = 'block'; // Show image preview
+                document.getElementById('result').textContent = ''; // Clear previous result
+                document.getElementById('comment').textContent = ''; // Clear previous comment
                 preview.onload = () => predict();
             };
             reader.readAsDataURL(event.target.files[0]);
+        });
+
+        document.getElementById('lang-toggle').addEventListener('click', () => {
+            currentLanguage = currentLanguage === 'ko' ? 'en' : 'ko';
+            updateUI();
+            // Re-predict if an image is already loaded to update the result text
+            const image = document.getElementById('image-preview');
+            if (image.src && image.src !== window.location.href + '#') { // Check if image exists
+                predict();
+            }
         });
 
         init();
